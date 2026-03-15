@@ -14,7 +14,6 @@ int main()
     uint16_t adc_read;
     char message[30] = { 0 };
     while (1) {
-        adc_read = ADC_Read(0);
         sprintf(message, "%d \n", adc_read);
         USART_Transmit(&message, sizeof(message));
         Delay(300);

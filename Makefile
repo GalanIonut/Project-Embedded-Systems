@@ -6,7 +6,7 @@ F_CPU = 16000000UL
 
 # Programmer Settings
 PROGRAMMER = arduino
-PORT = /dev/cu.usbserial-2140
+PORT = COM6
 BAUD = 57600
 # BAUD = 115200
 
@@ -27,7 +27,7 @@ COVDIR = $(BINDIR)/coverage
 
 # Compiler Flags
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -Wextra -std=gnu99
-CFLAGS += -I. -Idrivers/gpio -Idrivers/interrupt -Idrivers/timer -Idrivers/eeprom -Idrivers/adc -Ibsp -Iutils -Idrivers/usart
+CFLAGS += -I. -Idrivers/gpio -Idrivers/interrupt Idrivers/pid -Idrivers/timer -Idrivers/eeprom -Idrivers/adc -Ibsp -Iutils -Idrivers/usart
 
 ifeq ($(BOARD), nano)
     CFLAGS += -DBOARD_NANO
@@ -38,7 +38,7 @@ else
 endif
 
 # Source Files
-SRC = src/main.c drivers/gpio/gpio.c drivers/interrupt/external_interrupt.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/usart/usart.c drivers/pwm/pwm.c drivers/eeprom/eeprom.c drivers/adc/adc.c utils/delay.c
+SRC = src/main.c drivers/gpio/gpio.c drivers/pidparam/pid.c drivers/interrupt/external_interrupt.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/usart/usart.c drivers/pwm/pwm.c drivers/eeprom/eeprom.c drivers/adc/adc.c utils/delay.c
 
 # Object Files
 # Replace .c extension with .o and prepend OBJDIR, keeping directory structure
@@ -49,7 +49,9 @@ TARGET = $(BINDIR)/main
 
 # Unit Test Settings
 TEST_SOURCES = $(wildcard $(TESTDIR)/test_*.c)
-DRIVER_SOURCES = drivers/gpio/gpio.c drivers/pwm/pwm.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/adc/adc.c drivers/eeprom/eeprom.c drivers/usart/usart.c
+
+DRIVER_SOURCES = drivers/gpio/gpio.c drivers/pidparam/pid.c drivers/pwm/pwm.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/adc/adc.c drivers/eeprom/eeprom.c drivers/usart/usart.c
+
 MOCK_SOURCES = $(MOCKDIR)/registers.c
 
 # Rules
