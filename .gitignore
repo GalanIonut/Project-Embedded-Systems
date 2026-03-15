@@ -58,3 +58,9 @@ dkms.conf
 # debug information files
 *.dwo
 .clangd
+
+# VSCode
+.vscode
+
+# Compile flags
+compile_flags.txt
