@@ -49,7 +49,7 @@ TARGET = $(BINDIR)/main
 
 # Unit Test Settings
 TEST_SOURCES = $(wildcard $(TESTDIR)/test_*.c)
-DRIVER_SOURCES = drivers/gpio/gpio.c drivers/pwm/pwm.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/adc/adc.c drivers/eeprom/eeprom.c drivers/usart/usart.c
+DRIVER_SOURCES = drivers/gpio/gpio.c drivers/pwm/pwm.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/adc/adc.c drivers/eeprom/eeprom.c drivers/usart/usart.c
 MOCK_SOURCES = $(MOCKDIR)/registers.c
 
 # Rules

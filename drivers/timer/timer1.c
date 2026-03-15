@@ -4,8 +4,9 @@ void Timer1_FastPWM_Init(uint16_t prescaler, uint16_t top) {
     // 1. Set Fast PWM Mode 14 (WGM13:0 = 1110)
     // TOP is ICR1, Update of OCR1x at BOTTOM, TOV1 Flag Set on TOP
     
-    // TCCR1A: COM1A1, COM1B1 (Non-inverting), WGM11 (1)
-    TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM11);
+    // TCCR1A: WGM11 (1), WGM10 (0)
+    // Preserve existing COM bits if any
+    TCCR1A = (TCCR1A & 0xF0) | (1 << WGM11);
     
     // TCCR1B: WGM13 (1), WGM12 (1), CS1x (Prescaler)
     TCCR1B = (1 << WGM13) | (1 << WGM12);
@@ -24,12 +25,31 @@ void Timer1_FastPWM_Init(uint16_t prescaler, uint16_t top) {
         default: TCCR1B |= (1 << CS10); // Default to no prescaling
     }
 
-    // Initialize Duty Cycles to 0
-    OCR1A = 0;
-    OCR1B = 0;
+    // Initialize Duty Cycles to 0 only if they were 0? 
+    // No, better not reset them if already in use, but Init usually means fresh start.
+    // However, for shared timer, we don't want to reset the other channel.
+    // Let's only reset them if they are not enabled? 
+    // Actually, PWM_Init will set the duty cycle immediately after anyway.
+    if (!(TCCR1A & (1 << COM1A1))) OCR1A = 0;
+    if (!(TCCR1A & (1 << COM1B1))) OCR1B = 0;
+}
 
-    // Enable Timer1 Outputs on PB1 (OC1A/D9) and PB2 (OC1B/D10)
-    DDRB |= (1 << DDB1) | (1 << DDB2);
+void Timer1_EnableOC1A(void) {
+    TCCR1A |= (1 << COM1A1);
+    DDRB |= (1 << DDB1);
+}
+
+void Timer1_EnableOC1B(void) {
+    TCCR1A |= (1 << COM1B1);
+    DDRB |= (1 << DDB2);
+}
+
+void Timer1_DisableOC1A(void) {
+    TCCR1A &= ~(1 << COM1A1);
+}
+
+void Timer1_DisableOC1B(void) {
+    TCCR1A &= ~(1 << COM1B1);
 }
 
 void Timer1_SetDutyCycleA(uint16_t duty) {

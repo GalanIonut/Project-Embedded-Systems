@@ -59,6 +59,14 @@ volatile uint8_t ADCL = 0;
 volatile uint8_t ADCH = 0;
 volatile uint16_t ADC = 0;
 
+// USART
+volatile uint8_t UBRR0H = 0;
+volatile uint8_t UBRR0L = 0;
+volatile uint8_t UCSR0A = 0;
+volatile uint8_t UCSR0B = 0;
+volatile uint8_t UCSR0C = 0;
+volatile uint8_t UDR0 = 0;
+
 // SREG
 volatile uint8_t SREG = 0;
 
@@ -73,5 +81,6 @@ void Reset_Registers(void) {
     EICRA = 0; EIMSK = 0; EIFR = 0;
     EEAR = 0; EEDR = 0; EECR = 0;
     ADMUX = 0; ADCSRA = 0; ADC = 0;
+    UBRR0H = 0; UBRR0L = 0; UCSR0A = 0; UCSR0B = 0; UCSR0C = 0; UDR0 = 0;
     SREG = 0;
 }

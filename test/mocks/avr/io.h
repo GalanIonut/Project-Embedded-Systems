@@ -60,6 +60,14 @@ extern volatile uint8_t ADCL;
 extern volatile uint8_t ADCH;
 extern volatile uint16_t ADC; // 16-bit access
 
+// USART
+extern volatile uint8_t UBRR0H;
+extern volatile uint8_t UBRR0L;
+extern volatile uint8_t UCSR0A;
+extern volatile uint8_t UCSR0B;
+extern volatile uint8_t UCSR0C;
+extern volatile uint8_t UDR0;
+
 // Bit Definitions (Common AVR ones needed for logic)
 // GPIO
 #define PORTB0 0
@@ -123,6 +131,14 @@ extern volatile uint16_t ADC; // 16-bit access
 #define ADPS2 2
 #define ADPS1 1
 #define ADPS0 0
+
+// USART
+#define RXEN0  4
+#define TXEN0  3
+#define UCSZ01 2
+#define UCSZ00 1
+#define UDRE0  5
+#define RXC0   7
 
 // Register Bits
 // SREG is defined as a variable in interrupt.h for mocking purposes

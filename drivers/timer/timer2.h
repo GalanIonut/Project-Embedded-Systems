@@ -19,6 +19,26 @@
 void Timer2_FastPWM_Init(uint16_t prescaler);
 
 /**
+ * @brief Enable PWM output on Channel A (PB3 / D11).
+ */
+void Timer2_EnableOC2A(void);
+
+/**
+ * @brief Enable PWM output on Channel B (PD3 / D3).
+ */
+void Timer2_EnableOC2B(void);
+
+/**
+ * @brief Disable PWM output on Channel A (PB3 / D11).
+ */
+void Timer2_DisableOC2A(void);
+
+/**
+ * @brief Disable PWM output on Channel B (PD3 / D3).
+ */
+void Timer2_DisableOC2B(void);
+
+/**
  * @brief Set the duty cycle for Channel A (Pin D11 / PB3).
  * 
  * @param duty val (0 to 255)
