@@ -1,22 +1,22 @@
 #include "drivers/gpio/gpio.h"
-#include "drivers/timer/timer0.h"
+#include "drivers/interrupt/external_interrupt.h"
 #include "bsp/nano.h"
-
-int main(void) {
-    
+#include "drivers/usart/usart.h"
+#include "drivers/timer/timer0.h"
+#include <avr/io.h>
+#include "drivers/adc/adc.h"
+#include "stdio.h"
+int main()
+{
     Timer0_Init();
-
-    
-    GPIO_Init(LED_BUILTIN, GPIO_OUTPUT);
-
-    uint32_t last_time = 0;
-
+    USART_Init_Default();
+    ADC_Init();
+    uint16_t adc_read;
+    char message[30] = { 0 };
     while (1) {
-            
-        if (Millis() - last_time >= 1000) {
-            last_time = Millis();
-            GPIO_Toggle(LED_BUILTIN);
-            GPIO_Toggle(LED_BUILTIN);
-        }
+        adc_read = ADC_Read(0);
+        sprintf(message, "%d \n", adc_read);
+        USART_Transmit(&message, sizeof(message));
+        DelayT0(300);
     }
 }
