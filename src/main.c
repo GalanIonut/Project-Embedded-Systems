@@ -1,11 +1,11 @@
 #include "drivers/gpio/gpio.h"
-#include "drivers/interrupt/external_interrupt.h"
 #include "bsp/nano.h"
 #include "drivers/usart/usart.h"
 #include "drivers/timer/timer0.h"
 #include <avr/io.h>
 #include "drivers/adc/adc.h"
 #include "stdio.h"
+#include "utils/delay.h"
 int main()
 {
     Timer0_Init();
@@ -17,6 +17,6 @@ int main()
         adc_read = ADC_Read(0);
         sprintf(message, "%d \n", adc_read);
         USART_Transmit(&message, sizeof(message));
-        DelayT0(300);
+        Delay(300);
     }
 }
