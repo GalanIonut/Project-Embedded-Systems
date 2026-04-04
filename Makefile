@@ -27,7 +27,7 @@ COVDIR = $(BINDIR)/coverage
 
 # Compiler Flags
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -Wextra -std=gnu99
-CFLAGS += -I. -Idrivers/gpio -Idrivers/interrupt -Idrivers/pid -Idrivers/timer -Idrivers/eeprom -Idrivers/adc -Ibsp -Iutils -Idrivers/usart
+CFLAGS += -I. -Idrivers/gpio -Idrivers/interrupt -Idrivers/pid -Idrivers/timer -Idrivers/eeprom -Idrivers/adc -Ibsp -Iutils -Idrivers/usart -Idrivers/pwm -Idrivers/servo
 
 ifeq ($(BOARD), nano)
     CFLAGS += -DBOARD_NANO
@@ -38,7 +38,7 @@ else
 endif
 
 # Source Files
-SRC = src/main.c drivers/gpio/gpio.c drivers/pid/pid.c drivers/interrupt/external_interrupt.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/usart/usart.c drivers/pwm/pwm.c drivers/eeprom/eeprom.c drivers/adc/adc.c utils/delay.c
+SRC = src/main.c drivers/gpio/gpio.c drivers/pid/pid.c drivers/interrupt/external_interrupt.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/usart/usart.c drivers/pwm/pwm.c drivers/eeprom/eeprom.c drivers/adc/adc.c drivers/servo/servo.c utils/delay.c
 
 # Object Files
 # Replace .c extension with .o and prepend OBJDIR, keeping directory structure
@@ -67,6 +67,7 @@ directories:
 	@mkdir -p $(OBJDIR)/drivers/eeprom
 	@mkdir -p $(OBJDIR)/drivers/adc
 	@mkdir -p $(OBJDIR)/drivers/usart
+	@mkdir -p $(OBJDIR)/drivers/servo
 	@mkdir -p $(OBJDIR)/utils
 	@mkdir -p $(BINDIR)/test
 	@mkdir -p $(COVDIR)

@@ -1,28 +1,25 @@
-#include "drivers/gpio/gpio.h"
 #include "bsp/nano.h"
-#include "drivers/usart/usart.h"
 #include "drivers/timer/timer0.h"
-#include <avr/io.h>
-#include "drivers/adc/adc.h"
-#include <stdio.h>
-#include <string.h>
+#include "drivers/servo/servo.h"
 #include "utils/delay.h"
 
-int main(void)
-{
-    Timer0_Init();
-    USART_Init_Default();
-    ADC_Init();
-    
-    uint16_t adc_read = 0;
-    char message[30] = { 0 };
-    
+int main(void) {
+    Timer0_Init();   /* system tick for Delay() */
+    Servo_Init();    /* D9 / OC1A – 50 Hz, starts at 90° */
+
     while (1) {
-        adc_read = ADC_Read(0);
-        sprintf(message, "%d \n", adc_read);
-        USART_Transmit(message, strlen(message));
-        Delay(300);
+        /* Sweep 0° → 180° in 1° steps */
+        for (uint8_t angle = 0; angle <= 180; angle++) {
+            Servo_SetAngle(angle);
+            Delay(15);   /* ~15 ms between steps for smooth motion */
+        }
+
+        /* Sweep 180° → 0° in 1° steps */
+        for (int16_t angle = 180; angle >= 0; angle--) {
+            Servo_SetAngle((uint8_t)angle);
+            Delay(15);
+        }
     }
-    
+
     return 0;
 }
