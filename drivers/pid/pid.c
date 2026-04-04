@@ -87,7 +87,7 @@ float calculate_command(float kp, float ki, float kd,
     /* PID sum */
     float command = (kp * error)
         + (ki * integral)
-        + (kd * derivative);   /* ← was kp*derivative (bug) */
+        + (kd * derivative); 
 
     return command;
 }
