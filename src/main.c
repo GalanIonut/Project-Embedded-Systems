@@ -2,13 +2,14 @@
 #include "drivers/timer/timer0.h"
 #include "drivers/servo/servo.h"
 #include "utils/delay.h"
-
+#include "drivers/gpio/gpio.h"
 int main(void) {
     Timer0_Init();   /* system tick for Delay() */
     Servo_Init();    /* D9 / OC1A – 50 Hz, starts at 90° */
-
+	GPIO_Init(LED_BUILTIN, GPIO_OUTPUT);
     while (1) {
         /* Sweep 0° → 180° in 1° steps */
+		GPIO_Toggle(LED_BUILTIN);
         for (uint8_t angle = 0; angle <= 180; angle++) {
             Servo_SetAngle(angle);
             Delay(15);   /* ~15 ms between steps for smooth motion */

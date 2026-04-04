@@ -1,4 +1,7 @@
 #include "timer1.h"
+#include <stdint.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 void Timer1_FastPWM_Init(uint16_t prescaler, uint16_t top) {
     // 1. Set Fast PWM Mode 14 (WGM13:0 = 1110)
@@ -52,9 +55,21 @@ void Timer1_DisableOC1B(void) {
     TCCR1A &= ~(1 << COM1B1);
 }
 
-void Timer1_SetDutyCycleA(uint16_t duty) {
-    if (duty > ICR1) duty = ICR1; // Clamp to TOP
-    OCR1A = duty;
+void Timer1_SetDutyCycleA(uint16_t ticks) {
+    // 1. Declare a variable to store the current state of the Status Register
+    uint8_t sreg_save = SREG; 
+
+    // 2. Disable global interrupts so the 16-bit write isn't interrupted
+    cli();               
+	if (ticks > ICR1) {
+    ticks = ICR1; 
+	}
+    // 3. Perform the 16-bit write
+    // The compiler handles the high/low byte order for you here
+    OCR1A = ticks;       
+
+    // 4. Restore the Status Register (this re-enables interrupts if they were on)
+    SREG = sreg_save;         
 }
 
 void Timer1_SetDutyCycleB(uint16_t duty) {
