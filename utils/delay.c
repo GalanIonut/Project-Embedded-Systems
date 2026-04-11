@@ -12,11 +12,23 @@
 // each iteration with volatile variable takes significant cycles.
 // We will use a defined constant.
 
-#define ITERATIONS_PER_MS 1000 // Initial guess, requires calibration or looking at disassembly
+#define ITERATIONS_PER_MS 390
+#define ITERATIONS_PER_10_US 4
+
+// 390 iteration 1ms
+// 1 iteration x => x = 1/390 *1/ms = 0.00256 * 10^3 = 2.56 us -> 4 
 
 void Delay(uint32_t ms) {
     for (uint32_t i = 0; i < ms; i++) {
         for (volatile uint32_t j = 0; j < ITERATIONS_PER_MS; j++) {
+            asm volatile("nop");
+        }
+    }
+}
+
+void Delay10us() {
+    for (uint32_t i = 0; i < ms; i++) {
+        for (volatile uint32_t j = 0; j < ITERATIONS_PER_10_US; j++) {
             asm volatile("nop");
         }
     }
