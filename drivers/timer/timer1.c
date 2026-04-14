@@ -114,3 +114,21 @@ void Timer1_ICP_DisableInterrupt(void) {
 uint16_t Timer1_ICP_Read(void) {
     return ICR1;
 }
+
+uint16_t Timer1_GetCount(void) {
+    return TCNT1;
+}
+
+void Timer1_Normal_Init(uint16_t prescaler) {
+    TCCR1A = 0x00;
+    TCCR1B = 0x00;
+    TCNT1  = 0;
+    switch (prescaler) {
+        case 1:    TCCR1B = (1 << CS10); break;
+        case 8:    TCCR1B = (1 << CS11); break;
+        case 64:   TCCR1B = (1 << CS11) | (1 << CS10); break;
+        case 256:  TCCR1B = (1 << CS12); break;
+        case 1024: TCCR1B = (1 << CS12) | (1 << CS10); break;
+        default:   TCCR1B = (1 << CS11); break;
+    }
+}

@@ -1,69 +1,131 @@
 #include "hcsr04.h"
 #include "drivers/gpio/gpio.h"
-#include "drivers/timer/timer1.h"
 #include "drivers/timer/timer0.h"
-#include "utils/delay.h"
+#include "drivers/timer/timer1.h"
+#include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
 /*
- * HC-SR04 ULTRASONIC SENSOR DRIVER
+ * HC-SR04 DRIVER — Dual sensor via Pin Change Interrupt (PCINT)
  *
- * ECHO → D8 (PB0 / ICP1)  [FIXED — hardware pin]
- * TRIG → orice pin GPIO   [parametru]
+ * De ce PCINT si nu ICP?
+ *   - ICP e fix pe D8 — un singur senzor posibil
+ *   - PCINT exista pe toti pinii ATmega328P
+ *   - Timer1 ramane liber pentru Servo PWM
  *
- * Foloseste Timer1 ICP prin timer1.h (fara acces direct la registre).
+ * Timer1 dual-use:
+ *   - Servo PWM:  Timer1 in Fast PWM mode, OC1A/OC1B controleaza unghiul
+ *   - HC-SR04:    PCINT citeste TCNT1 la fiecare edge — nicio interferenta
+ *
+ * Overflow handling:
+ *   Normal mode:   TOP = 0xFFFF
+ *   Fast PWM M14:  TOP = ICR1
+ *   Formula:  if (t_fall < t_rise) → pulse = (TOP - t_rise) + t_fall + 1
  */
 
-static volatile uint8_t  capture_state = 0;  /* 0=idle, 1=rising capturat, 2=done */
-static volatile uint16_t time_rising   = 0;
-static volatile uint16_t time_falling  = 0;
+typedef struct {
+    uint8_t trig_port, trig_pin;
+    uint8_t echo_port, echo_pin;
+    volatile uint8_t  state;      /* 0=idle, 1=rising capturat, 2=done */
+    volatile uint16_t t_rising;
+    volatile uint16_t t_falling;
+    uint8_t           last_echo;
+} HCSR04_Sensor_t;
 
-ISR(TIMER1_CAPT_vect) {
-    if (capture_state == 0) {
-        time_rising  = Timer1_ICP_Read();
-        capture_state = 1;
-        Timer1_ICP_SetEdge(0);  /* urmatoarea captura pe falling edge */
+static HCSR04_Sensor_t sensors[HCSR04_MAX_SENSORS];
+static uint8_t         num_sensors = 0;
 
-    } else if (capture_state == 1) {
-        time_falling  = Timer1_ICP_Read();
-        capture_state = 2;
-        Timer1_ICP_SetEdge(1);  /* reset pentru urmatoarea masurare */
+/* ── Overflow handling ───────────────────────────────────────── */
+
+static uint16_t calc_ticks(uint16_t t_rise, uint16_t t_fall) {
+    if (t_fall >= t_rise) return t_fall - t_rise;
+    /* TCNT1 s-a resetat: detectam daca suntem in PWM mode (ICR1) sau Normal (0xFFFF) */
+    uint16_t top = (TCCR1A & (1 << WGM11)) ? ICR1 : 0xFFFF;
+    return (top - t_rise) + t_fall + 1;
+}
+
+/* ── PCINT setup ─────────────────────────────────────────────── */
+
+static void pcint_enable(uint8_t port, uint8_t pin) {
+    switch (port) {
+        case GPIO_PORTB: PCICR |= (1<<PCIE0); PCMSK0 |= (1<<pin); break;
+        case GPIO_PORTC: PCICR |= (1<<PCIE1); PCMSK1 |= (1<<pin); break;
+        case GPIO_PORTD: PCICR |= (1<<PCIE2); PCMSK2 |= (1<<pin); break;
+        default: break;
     }
 }
 
-void HCSR04_Init(uint8_t port, uint8_t pin) {
-    GPIO_Init(port, pin, GPIO_OUTPUT);
-    GPIO_Write(port, pin, GPIO_LOW);
+/* ── Handler comun PCINT ─────────────────────────────────────── */
 
-    Timer1_ICP_Init(8);             /* prescaler=8 → 1 tick = 0.5µs */
-    Timer1_ICP_EnableInterrupt();
+static void pcint_handler(uint8_t port) {
+    uint16_t now = Timer1_GetCount();
 
-    capture_state = 0;
+    for (uint8_t i = 0; i < num_sensors; i++) {
+        if (sensors[i].echo_port != port) continue;
+
+        uint8_t cur = GPIO_Read(sensors[i].echo_port, sensors[i].echo_pin);
+        if (cur == sensors[i].last_echo) continue;
+        sensors[i].last_echo = cur;
+
+        if (cur == GPIO_HIGH && sensors[i].state == 0) {
+            sensors[i].t_rising = now;
+            sensors[i].state = 1;
+        } else if (cur == GPIO_LOW && sensors[i].state == 1) {
+            sensors[i].t_falling = now;
+            sensors[i].state = 2;
+        }
+    }
+}
+
+ISR(PCINT0_vect) { pcint_handler(GPIO_PORTB); }
+ISR(PCINT1_vect) { pcint_handler(GPIO_PORTC); }
+ISR(PCINT2_vect) { pcint_handler(GPIO_PORTD); }
+
+/* ── API ─────────────────────────────────────────────────────── */
+
+void HCSR04_Init(uint8_t id,
+                 uint8_t trig_port, uint8_t trig_pin,
+                 uint8_t echo_port, uint8_t echo_pin)
+{
+    if (id >= HCSR04_MAX_SENSORS) return;
+
+    sensors[id].trig_port = trig_port;
+    sensors[id].trig_pin  = trig_pin;
+    sensors[id].echo_port = echo_port;
+    sensors[id].echo_pin  = echo_pin;
+    sensors[id].state     = 0;
+    sensors[id].last_echo = GPIO_LOW;
+
+    GPIO_Init(trig_port, trig_pin, GPIO_OUTPUT);
+    GPIO_Write(trig_port, trig_pin, GPIO_LOW);
+    GPIO_Init(echo_port, echo_pin, GPIO_INPUT);
+
+    pcint_enable(echo_port, echo_pin);
+
+    if (id + 1 > num_sensors) num_sensors = id + 1;
+
+    /* Porneste Timer1 in Normal mode daca nu ruleaza deja (ex. fara Servo) */
+    if (!(TCCR1B & 0x07)) Timer1_Normal_Init(8);
+
     sei();
 }
 
-uint16_t HCSR04_Read(uint8_t port, uint8_t pin) {
-    capture_state = 0;
+uint16_t HCSR04_Read(uint8_t id) {
+    if (id >= num_sensors) return 0;
 
-    /* Puls TRIG: 10µs HIGH */
-    GPIO_Write(port, pin, GPIO_HIGH);
+    sensors[id].state = 0;
+
+    GPIO_Write(sensors[id].trig_port, sensors[id].trig_pin, GPIO_HIGH);
     _delay_us(10);
-    GPIO_Write(port, pin, GPIO_LOW);
+    GPIO_Write(sensors[id].trig_port, sensors[id].trig_pin, GPIO_LOW);
 
-    /* Asteapta ambele capturi (timeout 30ms) */
     uint32_t t0 = Millis();
-    while (capture_state < 2) {
-        if ((Millis() - t0) > 30) return 0;  /* timeout */
+    while (sensors[id].state < 2) {
+        if ((Millis() - t0) > HCSR04_TIMEOUT_MS) return 0;
     }
 
-    /* Calculeaza latimea pulsului (cu overflow handling) */
-    uint16_t pulse_ticks = (time_falling >= time_rising)
-                         ? (time_falling - time_rising)
-                         : (0xFFFF - time_rising) + time_falling;
-
-    /* prescaler=8 → 1 tick=0.5µs → distance = ticks*0.5/58 = ticks/116 */
-    uint16_t distance_cm = pulse_ticks / 116;
-
-    return (distance_cm > 400) ? 400 : distance_cm;
+    uint16_t ticks = calc_ticks(sensors[id].t_rising, sensors[id].t_falling);
+    uint16_t dist  = ticks / 116;  /* prescaler=8: 1 tick=0.5µs → dist=ticks/116 */
+    return (dist > 400) ? 400 : dist;
 }

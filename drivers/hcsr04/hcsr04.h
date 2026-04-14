@@ -6,48 +6,51 @@
 
 /**
  * @file hcsr04.h
- * @brief HC-SR04 Ultrasonic Distance Sensor Driver
+ * @brief HC-SR04 Ultrasonic Sensor Driver — Dual sensor via PCINT
  *
- * Uses Timer1 Input Capture (ICP1 on D8 / PB0) to measure ECHO pulse width.
- * Converts pulse duration to distance in centimeters.
+ * Suporta 2 senzori simultan. ECHO poate fi pe ORICE pin digital.
+ * Timer1 e folosit ca sursa de timp (TCNT1) — compatibil cu Servo PWM.
  *
- * Pinout (per sensor):
- *   VCC   → 5V
- *   GND   → GND
- *   TRIG  → any GPIO pin (configured at init)
- *   ECHO  → Timer1 ICP pin (D8 / PB0)
+ * Cablaj:
+ *   TRIG → orice pin GPIO output
+ *   ECHO → orice pin GPIO input  (PCINT detecteaza edge-urile)
+ *   VCC  → 5V,  GND → GND comun
  *
- * Operation:
- *   1. HCSR04_Init(trig_port, trig_pin) — configure TRIG as output
- *   2. HCSR04_Read(trig_port, trig_pin)  — send 10µs pulse, measure echo
- *   3. return distance in cm (0–400)
+ * Utilizare (1 senzor):
+ *   HCSR04_Init(0, GPIO_PORTD, 4, GPIO_PORTD, 5);
+ *   uint16_t d = HCSR04_Read(0);
+ *
+ * Utilizare (2 senzori):
+ *   HCSR04_Init(0, GPIO_PORTD, 4, GPIO_PORTD, 5);
+ *   HCSR04_Init(1, GPIO_PORTD, 6, GPIO_PORTD, 7);
+ *   uint16_t d0 = HCSR04_Read(0);
+ *   uint16_t d1 = HCSR04_Read(1);
  */
 
-/**
- * @brief Initialize HC-SR04 sensor by configuring TRIG pin as output.
- *
- * @param port GPIO port of TRIG pin
- * @param pin  GPIO pin number of TRIG pin
- * @note ECHO must be wired to D8 (PB0 / ICP1) — hardware requirement
- */
-void HCSR04_Init(uint8_t port, uint8_t pin);
+#define HCSR04_MAX_SENSORS  2
+#define HCSR04_TIMEOUT_MS   30   /* 30ms ≈ 400cm maxim */
 
 /**
- * @brief Measure and return distance to object in centimeters.
+ * @brief Initializeaza un senzor HC-SR04.
  *
- * Sequence:
- *   1. Send 10 µs HIGH pulse on TRIG
- *   2. Wait for ECHO to go HIGH (rising edge)
- *   3. Measure time until ECHO goes LOW (falling edge) using Timer1 ICP
- *   4. Convert pulse width in µs to distance in cm using: distance = echo_us / 58
- *
- * @param port GPIO port of TRIG pin
- * @param pin  GPIO pin number of TRIG pin
- * @return Distance in cm (uint16_t, 0–400 typical range)
- * @note Maximum measurement: ~23ms → ~400cm (sensor spec)
- * @note BLOCKING function (~60ms worst case including Timeout)
- * @note If no echo received within timeout (30ms), returns 0
+ * @param id         Index senzor: 0 sau 1
+ * @param trig_port  Port TRIG (GPIO_PORTB/C/D)
+ * @param trig_pin   Pin TRIG (0–7)
+ * @param echo_port  Port ECHO (GPIO_PORTB/C/D)
+ * @param echo_pin   Pin ECHO (0–7)
  */
-uint16_t HCSR04_Read(uint8_t port, uint8_t pin);
+void HCSR04_Init(uint8_t id,
+                 uint8_t trig_port, uint8_t trig_pin,
+                 uint8_t echo_port, uint8_t echo_pin);
+
+/**
+ * @brief Declanseaza masurare si returneaza distanta in cm.
+ *
+ * Apel blocant — asteapta pulsul ECHO (max HCSR04_TIMEOUT_MS ms).
+ *
+ * @param id  Index senzor: 0 sau 1
+ * @return    Distanta in cm (1–400), sau 0 la timeout/eroare
+ */
+uint16_t HCSR04_Read(uint8_t id);
 
 #endif // HCSR04_H

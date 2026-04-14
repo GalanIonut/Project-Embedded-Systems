@@ -94,4 +94,22 @@ void Timer1_ICP_DisableInterrupt(void);
  */
 uint16_t Timer1_ICP_Read(void);
 
+/**
+ * @brief Read current Timer1 counter (TCNT1) — works in any mode.
+ *
+ * Folosit de HC-SR04 via PCINT pentru a timestamp edge-urile ECHO
+ * fara sa interfereze cu Servo PWM pe acelasi timer.
+ */
+uint16_t Timer1_GetCount(void);
+
+/**
+ * @brief Porneste Timer1 in Normal mode (free-running).
+ *
+ * Apelat de HC-SR04 cand Servo nu e activ si Timer1 nu ruleaza.
+ * Daca Servo PWM e activ, NU apela — Timer1 ruleaza deja.
+ *
+ * @param prescaler  1, 8, 64, 256, 1024
+ */
+void Timer1_Normal_Init(uint16_t prescaler);
+
 #endif // TIMER1_H
