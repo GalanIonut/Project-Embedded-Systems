@@ -27,9 +27,8 @@ void Delay(uint32_t ms) {
 }
 
 void Delay10us() {
-    for (uint32_t i = 0; i < ms; i++) {
-        for (volatile uint32_t j = 0; j < ITERATIONS_PER_10_US; j++) {
-            asm volatile("nop");
-        }
+    /* Fixed 10µs delay using loop with ITERATIONS_PER_10_US */
+    for (volatile uint32_t j = 0; j < ITERATIONS_PER_10_US; j++) {
+        asm volatile("nop");
     }
 }
