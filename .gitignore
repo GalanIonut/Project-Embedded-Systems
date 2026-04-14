@@ -62,5 +62,15 @@ dkms.conf
 # VSCode
 .vscode
 
+# Visual Studio
+.vs/
+
+# Build output directories
+obj/
+
+# macOS system files
+.DS_Store
+**/.DS_Store
+
 # Compile flags
 compile_flags.txt
