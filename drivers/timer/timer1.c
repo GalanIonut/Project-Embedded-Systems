@@ -80,3 +80,37 @@ void Timer1_SetDutyCycleB(uint16_t duty) {
 void Timer1_Stop(void) {
     TCCR1B &= ~((1 << CS12) | (1 << CS11) | (1 << CS10));
 }
+
+/* ── Input Capture ────────────────────────────────────────────────────────── */
+
+void Timer1_ICP_Init(uint16_t prescaler) {
+    TCCR1A = 0x00;      /* Normal mode — no PWM output */
+    TCCR1B = (1 << 6);  /* ICES1=1: capture on rising edge first */
+    TCNT1  = 0;
+
+    switch (prescaler) {
+        case 1:    TCCR1B |= (1 << CS10); break;
+        case 8:    TCCR1B |= (1 << CS11); break;
+        case 64:   TCCR1B |= (1 << CS11) | (1 << CS10); break;
+        case 256:  TCCR1B |= (1 << CS12); break;
+        case 1024: TCCR1B |= (1 << CS12) | (1 << CS10); break;
+        default:   TCCR1B |= (1 << CS11); break; /* fallback: prescaler=8 */
+    }
+}
+
+void Timer1_ICP_SetEdge(uint8_t rising) {
+    if (rising) TCCR1B |=  (1 << 6);  /* ICES1=1 → rising edge  */
+    else        TCCR1B &= ~(1 << 6);  /* ICES1=0 → falling edge */
+}
+
+void Timer1_ICP_EnableInterrupt(void) {
+    TIMSK1 |= (1 << 5);   /* ICIE1=1 */
+}
+
+void Timer1_ICP_DisableInterrupt(void) {
+    TIMSK1 &= ~(1 << 5);  /* ICIE1=0 */
+}
+
+uint16_t Timer1_ICP_Read(void) {
+    return ICR1;
+}

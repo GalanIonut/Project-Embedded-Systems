@@ -56,4 +56,42 @@ void Timer1_SetDutyCycleB(uint16_t duty);
  */
 void Timer1_Stop(void);
 
+/* ── Input Capture (ICP1 / D8 / PB0) ─────────────────────────────────────── */
+
+/**
+ * @brief Initialize Timer1 for Input Capture mode.
+ *
+ * Configures Timer1 in Normal mode (free-running counter).
+ * ECHO pin must be connected to D8 (PB0 / ICP1) — hardware fixed.
+ *
+ * @param prescaler Clock prescaler: 1, 8, 64, 256, 1024
+ *                  prescaler=8 → 1 tick = 0.5µs @ 16MHz (recommended for HC-SR04)
+ */
+void Timer1_ICP_Init(uint16_t prescaler);
+
+/**
+ * @brief Select which edge triggers the next Input Capture.
+ *
+ * @param rising  1 = capture on rising edge (ECHO goes HIGH)
+ *                0 = capture on falling edge (ECHO goes LOW)
+ */
+void Timer1_ICP_SetEdge(uint8_t rising);
+
+/**
+ * @brief Enable Timer1 Input Capture interrupt (TIMER1_CAPT_vect).
+ */
+void Timer1_ICP_EnableInterrupt(void);
+
+/**
+ * @brief Disable Timer1 Input Capture interrupt.
+ */
+void Timer1_ICP_DisableInterrupt(void);
+
+/**
+ * @brief Read the last captured timer value from ICR1.
+ *
+ * @return 16-bit timer value at the moment of the captured edge
+ */
+uint16_t Timer1_ICP_Read(void);
+
 #endif // TIMER1_H

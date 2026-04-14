@@ -6,7 +6,7 @@ F_CPU = 16000000UL
 
 # Programmer Settings
 PROGRAMMER = arduino
-PORT = COM6
+PORT = /dev/cu.usbserial-2130
 BAUD = 57600
 # BAUD = 115200
 
@@ -27,7 +27,7 @@ COVDIR = $(BINDIR)/coverage
 
 # Compiler Flags
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -Wextra -std=gnu99
-CFLAGS += -I. -Idrivers/gpio -Idrivers/interrupt -Idrivers/pid -Idrivers/timer -Idrivers/eeprom -Idrivers/adc -Ibsp -Iutils -Idrivers/usart -Idrivers/pwm -Idrivers/servo
+CFLAGS += -I. -Idrivers/gpio -Idrivers/interrupt -Idrivers/pid -Idrivers/timer -Idrivers/eeprom -Idrivers/adc -Ibsp -Iutils -Idrivers/usart -Idrivers/pwm -Idrivers/servo -Idrivers/hcsr04 -Idrivers/buzzer -Idrivers/i2c -Idrivers/oled
 
 ifeq ($(BOARD), nano)
     CFLAGS += -DBOARD_NANO
@@ -38,7 +38,7 @@ else
 endif
 
 # Source Files
-SRC = src/main.c drivers/gpio/gpio.c drivers/pid/pid.c drivers/interrupt/external_interrupt.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/usart/usart.c drivers/pwm/pwm.c drivers/eeprom/eeprom.c drivers/adc/adc.c drivers/servo/servo.c utils/delay.c
+SRC = src/main.c drivers/gpio/gpio.c drivers/pid/pid.c drivers/interrupt/external_interrupt.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/usart/usart.c drivers/pwm/pwm.c drivers/eeprom/eeprom.c drivers/adc/adc.c drivers/servo/servo.c drivers/hcsr04/hcsr04.c drivers/buzzer/buzzer.c drivers/i2c/i2c.c drivers/oled/ssd1306.c drivers/oled/oled.c utils/delay.c
 
 # Object Files
 # Replace .c extension with .o and prepend OBJDIR, keeping directory structure
@@ -50,7 +50,7 @@ TARGET = $(BINDIR)/main
 # Unit Test Settings
 TEST_SOURCES = $(wildcard $(TESTDIR)/test_*.c)
 
-DRIVER_SOURCES = drivers/gpio/gpio.c drivers/pid/pid.c drivers/pwm/pwm.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/adc/adc.c drivers/eeprom/eeprom.c drivers/usart/usart.c
+DRIVER_SOURCES = drivers/gpio/gpio.c drivers/pid/pid.c drivers/pwm/pwm.c drivers/timer/timer0.c drivers/timer/timer1.c drivers/timer/timer2.c drivers/adc/adc.c drivers/eeprom/eeprom.c drivers/usart/usart.c drivers/servo/servo.c drivers/hcsr04/hcsr04.c drivers/buzzer/buzzer.c
 
 MOCK_SOURCES = $(MOCKDIR)/registers.c
 
@@ -68,6 +68,10 @@ directories:
 	@mkdir -p $(OBJDIR)/drivers/adc
 	@mkdir -p $(OBJDIR)/drivers/usart
 	@mkdir -p $(OBJDIR)/drivers/servo
+	@mkdir -p $(OBJDIR)/drivers/hcsr04
+	@mkdir -p $(OBJDIR)/drivers/buzzer
+	@mkdir -p $(OBJDIR)/drivers/i2c
+	@mkdir -p $(OBJDIR)/drivers/oled
 	@mkdir -p $(OBJDIR)/utils
 	@mkdir -p $(BINDIR)/test
 	@mkdir -p $(COVDIR)
