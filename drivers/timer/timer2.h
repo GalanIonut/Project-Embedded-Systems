@@ -5,6 +5,18 @@
 #include <avr/io.h>
 
 /**
+ * @file timer2.h
+ * @brief Timer2 (8-bit) driver — Fast PWM mode.
+ *
+ * Configures Timer2 in Fast PWM Mode 3 (TOP = 0xFF).
+ * Frequency = F_CPU / (prescaler × 256).
+ *
+ * Pin mapping:
+ *   OC2A → D11 (PB3)
+ *   OC2B → D3  (PD3)
+ */
+
+/**
  * @brief Initialize Timer2 for Fast PWM mode.
  * 
  * Configures Timer2 for Fast PWM (Mode 3 or Mode 7).

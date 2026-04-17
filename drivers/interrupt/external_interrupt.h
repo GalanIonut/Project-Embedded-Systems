@@ -5,16 +5,25 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-// Interrupt definitions
+/**
+ * @file external_interrupt.h
+ * @brief External interrupt driver for ATmega328P (INT0 / INT1).
+ *
+ * Pin mapping (fixed by hardware):
+ *   INT0 → D2 (PD2)
+ *   INT1 → D3 (PD3)
+ *
+ * Registers a user callback invoked from the ISR on each trigger event.
+ */
+
 #define INT_0 0
 #define INT_1 1
 
-// Trigger modes (based on EICRA register)
 typedef enum {
-    EXT_INT_LOW_LEVEL = 0,
-    EXT_INT_ANY_CHANGE = 1,
+    EXT_INT_LOW_LEVEL    = 0,
+    EXT_INT_ANY_CHANGE   = 1,
     EXT_INT_FALLING_EDGE = 2,
-    EXT_INT_RISING_EDGE = 3
+    EXT_INT_RISING_EDGE  = 3
 } ext_int_trigger_t;
 
 /**

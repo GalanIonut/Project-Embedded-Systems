@@ -5,6 +5,19 @@
 #include <avr/io.h>
 
 /**
+ * @file timer1.h
+ * @brief Timer1 (16-bit) driver — Fast PWM, Input Capture, and Normal mode.
+ *
+ * Timer1 is shared between Servo PWM (OC1A/OC1B) and HC-SR04 (PCINT timestamp).
+ * Both can coexist: PWM runs in Fast PWM Mode 14, PCINT reads TCNT1 on each edge.
+ *
+ * Pin mapping:
+ *   OC1A → D9  (PB1)
+ *   OC1B → D10 (PB2)
+ *   ICP1 → D8  (PB0)  — Input Capture only
+ */
+
+/**
  * @brief Initialize Timer1 for Fast PWM mode.
  * 
  * Configures Timer1 for Fast PWM (Mode 14), where ICR1 sets the TOP value 
@@ -97,16 +110,16 @@ uint16_t Timer1_ICP_Read(void);
 /**
  * @brief Read current Timer1 counter (TCNT1) — works in any mode.
  *
- * Folosit de HC-SR04 via PCINT pentru a timestamp edge-urile ECHO
- * fara sa interfereze cu Servo PWM pe acelasi timer.
+ * Used by HC-SR04 via PCINT to timestamp ECHO edges
+ * without interfering with Servo PWM on the same timer.
  */
 uint16_t Timer1_GetCount(void);
 
 /**
- * @brief Porneste Timer1 in Normal mode (free-running).
+ * @brief Start Timer1 in Normal mode (free-running).
  *
- * Apelat de HC-SR04 cand Servo nu e activ si Timer1 nu ruleaza.
- * Daca Servo PWM e activ, NU apela — Timer1 ruleaza deja.
+ * Called by HC-SR04 when Servo is not active and Timer1 is not running.
+ * Do NOT call if Servo PWM is active — Timer1 is already running.
  *
  * @param prescaler  1, 8, 64, 256, 1024
  */

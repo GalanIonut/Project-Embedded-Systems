@@ -9,14 +9,14 @@
 /*
  * HC-SR04 DRIVER — Dual sensor via Pin Change Interrupt (PCINT)
  *
- * De ce PCINT si nu ICP?
- *   - ICP e fix pe D8 — un singur senzor posibil
- *   - PCINT exista pe toti pinii ATmega328P
- *   - Timer1 ramane liber pentru Servo PWM
+ * Why PCINT and not ICP?
+ *   - ICP is fixed on D8 — only one sensor possible
+ *   - PCINT is available on all ATmega328P pins
+ *   - Timer1 remains free for Servo PWM
  *
  * Timer1 dual-use:
- *   - Servo PWM:  Timer1 in Fast PWM mode, OC1A/OC1B controleaza unghiul
- *   - HC-SR04:    PCINT citeste TCNT1 la fiecare edge — nicio interferenta
+ *   - Servo PWM:  Timer1 in Fast PWM mode, OC1A/OC1B controls the angle
+ *   - HC-SR04:    PCINT reads TCNT1 on each edge — no interference
  *
  * Overflow handling:
  *   Normal mode:   TOP = 0xFFFF
@@ -27,7 +27,7 @@
 typedef struct {
     uint8_t trig_port, trig_pin;
     uint8_t echo_port, echo_pin;
-    volatile uint8_t  state;      /* 0=idle, 1=rising capturat, 2=done */
+    volatile uint8_t  state;      /* 0=idle, 1=rising captured, 2=done */
     volatile uint16_t t_rising;
     volatile uint16_t t_falling;
     uint8_t           last_echo;
@@ -40,7 +40,7 @@ static uint8_t         num_sensors = 0;
 
 static uint16_t calc_ticks(uint16_t t_rise, uint16_t t_fall) {
     if (t_fall >= t_rise) return t_fall - t_rise;
-    /* TCNT1 s-a resetat: detectam daca suntem in PWM mode (ICR1) sau Normal (0xFFFF) */
+    /* TCNT1 overflowed: detect whether we are in PWM mode (ICR1) or Normal mode (0xFFFF) */
     uint16_t top = (TCCR1A & (1 << WGM11)) ? ICR1 : 0xFFFF;
     return (top - t_rise) + t_fall + 1;
 }
@@ -56,7 +56,7 @@ static void pcint_enable(uint8_t port, uint8_t pin) {
     }
 }
 
-/* ── Handler comun PCINT ─────────────────────────────────────── */
+/* ── Common PCINT handler ────────────────────────────────────── */
 
 static void pcint_handler(uint8_t port) {
     uint16_t now = Timer1_GetCount();
@@ -105,7 +105,7 @@ void HCSR04_Init(uint8_t id,
 
     if (id + 1 > num_sensors) num_sensors = id + 1;
 
-    /* Porneste Timer1 in Normal mode daca nu ruleaza deja (ex. fara Servo) */
+    /* Start Timer1 in Normal mode if not already running (e.g. without Servo) */
     if (!(TCCR1B & 0x07)) Timer1_Normal_Init(8);
 
     sei();

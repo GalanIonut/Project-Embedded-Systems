@@ -4,6 +4,14 @@
 #include <stdint.h>
 
 /**
+ * @file adc.h
+ * @brief ADC driver for ATmega328P.
+ *
+ * Reference: AVCC (5V). Prescaler: 128 → 125 kHz ADC clock @ 16 MHz.
+ * Returns 10-bit results (0–1023).
+ */
+
+/**
  * @brief Initialize the ADC.
  * Configures AVCC as reference voltage.
  * Sets prescaler to 128 (125kHz @ 16MHz).
