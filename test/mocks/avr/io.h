@@ -3,6 +3,16 @@
 
 #include <stdint.h>
 
+// Default board and clock settings for unit tests.
+// All driver code compiled under -DUNIT_TEST picks these up
+// through this mock header (included via -Itest/mocks).
+#ifndef BOARD_NANO
+#define BOARD_NANO
+#endif
+#ifndef F_CPU
+#define F_CPU 16000000UL
+#endif
+
 // Mock Registers as extern variables
 // GPIO
 extern volatile uint8_t DDRB;

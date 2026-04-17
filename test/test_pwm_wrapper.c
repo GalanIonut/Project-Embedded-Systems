@@ -54,17 +54,29 @@ void test_pwm_duty_cycle(void) {
     Reset_Registers();
     printf("Testing PWM Duty Cycle...\n");
 
-    // Init Timer1 first to set ICR1
-    ICR1 = 1000;
-    
-    // Set 50% Duty on D9 (PB1) 
-    // Duty 127/255 -> ~50%
-    // Expected OCR1A = (127 * 1000) / 255 = 498
-    PWM_SetDutyCycle(GPIO_PORTB, 1, 127);
-    assert(OCR1A == 498);
+    // PWM_SetDutyCycle takes pulse_us (microseconds), not a 0-255 byte.
+    // With F_CPU = 16 MHz and prescaler = 8:
+    //   ticks = pulse_us * (16000000 / 1000000) / 8 = pulse_us * 2
 
-    // Set 100% Duty
-    PWM_SetDutyCycle(GPIO_PORTB, 1, 255);
+    // Set TCCR1B to prescaler 8 (CS11 = bit 1) so pwm_timer1_prescaler() returns 8.
+    TCCR1B = (1 << CS11);
+    ICR1 = 39999; // TOP for 50 Hz @ prescaler 8
+
+    // 500 us (0 degrees) -> 500 * 2 = 1000 ticks
+    PWM_SetDutyCycle(GPIO_PORTB, 1, 500);
+    assert(OCR1A == 1000);
+
+    // 1500 us (90 degrees, neutral) -> 1500 * 2 = 3000 ticks
+    PWM_SetDutyCycle(GPIO_PORTB, 1, 1500);
+    assert(OCR1A == 3000);
+
+    // 2500 us (180 degrees) -> 2500 * 2 = 5000 ticks
+    PWM_SetDutyCycle(GPIO_PORTB, 1, 2500);
+    assert(OCR1A == 5000);
+
+    // Clamping: pulse wider than period -> clamped to ICR1
+    ICR1 = 1000;
+    PWM_SetDutyCycle(GPIO_PORTB, 1, 1000); // 1000 * 2 = 2000 > ICR1=1000 -> clamped
     assert(OCR1A == 1000);
 
     printf("PWM Duty Cycle Passed.\n");
