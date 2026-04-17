@@ -74,3 +74,6 @@ obj/
 
 # Compile flags
 compile_flags.txt
+
+# Local Claude Code configuration
+CLAUDE.md
