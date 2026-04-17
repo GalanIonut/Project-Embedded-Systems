@@ -62,7 +62,7 @@ void GPIO_Write(gpio_port_t port, uint8_t pin, gpio_state_t state) {
 /**
  * @brief Reads the logical state of a GPIO pin.
  * 
- * Reads from the PIN register to determing input state.
+ * Reads from the PIN register to determine the input state.
  * 
  * @param port The GPIO port.
  * @param pin The pin number (0-7).

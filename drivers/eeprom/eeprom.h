@@ -4,6 +4,14 @@
 #include <stdint.h>
 
 /**
+ * @file eeprom.h
+ * @brief Internal EEPROM read/write driver for ATmega328P.
+ *
+ * ATmega328P has 1 KB of EEPROM (addresses 0–1023), rated for ~100 000 write cycles.
+ * EEPROM_Update() skips the write if the stored value already matches, extending lifetime.
+ */
+
+/**
  * @brief Read a byte from the specified EEPROM address.
  * 
  * @param address The 0-1023 address to read from.

@@ -3,16 +3,16 @@
 
 #include <stdint.h>
 
-/*
+/**
  * @file ssd1306.h
- * @brief SSD1306 command layer — 128x64 OLED over I2C
+ * @brief SSD1306 command layer — 128x64 OLED over I2C.
  *
- * I2C address: 0x3C (7-bit) = 0x78 write, 0x79 read
+ * I2C address: 0x3C (7-bit) = 0x78 write, 0x79 read.
  *
  * Display layout:
- *   8 pages × 128 columns
- *   Each page = 8 pixel rows
- *   Each byte written = 8 vertical pixels (bit0 = top)
+ *   8 pages × 128 columns.
+ *   Each page = 8 pixel rows.
+ *   Each byte written = 8 vertical pixels (bit0 = top row).
  */
 
 #define SSD1306_ADDR  0x3C   /* 7-bit I2C address */

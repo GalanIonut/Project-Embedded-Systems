@@ -5,23 +5,23 @@
 #include <stdint.h>
 
 /*
- * ═══════════════════════════════════════════════════════════════════════════
+ * -------------------------------------------------------------------------
  * BUZZER DRIVER — Simple GPIO-based audio feedback
- * ═══════════════════════════════════════════════════════════════════════════
+ * -------------------------------------------------------------------------
  *
- * HARDWARE:
+ * Hardware:
  *   Active buzzer (e.g., KY-012 or equivalent):
  *     + Pin → GPIO (e.g., D12 / PB4)
  *     - Pin → GND
  *
- * OPERATION:
+ * Operation:
  *   - Buzzer_On()     → GPIO = HIGH → buzzer sounds
  *   - Buzzer_Off()    → GPIO = LOW  → buzzer silent
  *   - Buzzer_Beep()   → ON for X ms, OFF for Y ms
  *   - Buzzer_Tone()   → Toggle rapidly to create frequency
  *
- * NOTE: This is NOT PWM-based. It's GPIO toggle.
- * For true variable frequency, would need Timer-based PWM.
+ * Note: This is GPIO toggle, not Timer-based PWM.
+ * -------------------------------------------------------------------------
  */
 
 static uint8_t buzzer_port = 0;

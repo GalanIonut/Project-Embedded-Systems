@@ -11,19 +11,18 @@
  * over the hardware USART peripheral (USART0).
  */
 
- /**
-  * @brief Initializes USART with default settings (16MHz, 57600 baud).
-  */
+/** @brief Initializes USART with default settings (16 MHz, 57600 baud). */
 #define USART_Init_Default() USART_Init(16000000, 57600)
 
-#define MAX_SIZE_RECEIVE_USART 50
-#define TIMEOUT_USART 1000
-  /**
-   * @brief Initializes USART communication with the specified baud rate.
-   *
-   * @param fosc Oscillator frequency in Hz (e.g. 16000000 for 16MHz)
-   * @param baud Desired baud rate (e.g. 57600)
-   */
+#define MAX_SIZE_RECEIVE_USART  50
+#define TIMEOUT_USART           1000
+
+/**
+ * @brief Initializes USART communication with the specified baud rate.
+ *
+ * @param fosc Oscillator frequency in Hz (e.g. 16000000 for 16 MHz).
+ * @param baud Desired baud rate (e.g. 57600).
+ */
 void USART_Init(unsigned long fosc, unsigned int baud);
 
 /**
